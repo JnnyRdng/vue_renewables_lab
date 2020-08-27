@@ -1,6 +1,6 @@
 <template>
   <div>
-    <GChart id="fuel-mix-chart" type="ColumnChart" :data="fuelMix" :options="chartOptions" />
+    <GChart id="fuel-mix-chart" type="PieChart" :data="fuelMix" :options="chartOptions" />
   </div>
 </template>
 
