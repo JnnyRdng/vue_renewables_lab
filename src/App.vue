@@ -1,28 +1,58 @@
 <template>
-  <div id="app">
-    <img alt="Vue logo" src="./assets/logo.png">
-    <HelloWorld msg="Welcome to Your Vue.js App"/>
+  <div>
+    <h1>Fuel Mix for UK by percentage</h1>
+    <google-chart :fuelMix="fuelMix" :fromTime="fromTime"></google-chart>
   </div>
 </template>
 
 <script>
-import HelloWorld from './components/HelloWorld.vue'
+import GoogleChart from "./components/GoogleChart.vue";
 
 export default {
-  name: 'App',
+  name: "App",
+  data() {
+    return {
+      fromTime: "",
+      toTime: "",
+      fuelMix: [],
+    };
+  },
   components: {
-    HelloWorld
-  }
-}
+    "google-chart": GoogleChart,
+  },
+  methods: {
+    fetchData: function () {
+      fetch("https://api.carbonintensity.org.uk/generation")
+        .then((response) => response.json())
+        .then((data) => {
+          console.log(data.data);
+          this.fromTime = data.data.from;
+          this.toTime = data.data.to;
+          // this.fuelMix = data.data.generationmix;
+          const fuelArray = [["Fuel", "Percentage"]];
+          data.data.generationmix.forEach((mix) => {
+            const newFuel = [mix.fuel, mix.perc];
+            fuelArray.push(newFuel);
+          });
+          this.fuelMix = fuelArray;
+
+          /*
+          [
+            ["Fuel", "Percentage"],
+            ["hydro", "4"],
+            ["gas", "20"],
+            ["nuclear", 30],
+            ["coal", 10]
+          ]
+          */
+        });
+    },
+  },
+  mounted() {
+    this.fetchData();
+  },
+};
 </script>
 
 <style>
-#app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
-}
 </style>
