@@ -1,6 +1,6 @@
 <template>
   <div>
-    <GChart type="ColumnChart" :data="fuelMix" :options="chartOptions" />
+    <GChart id="fuel-mix-chart" type="ColumnChart" :data="fuelMix" :options="chartOptions" />
   </div>
 </template>
 
@@ -11,20 +11,23 @@ export default {
   components: {
     GChart,
   },
-  data() {
-    return {
-      chartOptions: {
-        chart: {
-          title: "UK Fuel Mix",
-          subtitle: this.from,
-        },
-      },
-    };
+  computed: {
+    chartOptions: function () {
+      return {
+        title: `UK Fuel Mix from ${this.fromTime} until ${this.fromTime}`,
+      };
+    },
   },
-  computed: {},
-  props: ["fuelMix", "fromTime"],
+  props: ["fuelMix", "fromTime", "toTime"],
 };
 </script>
 
 <style>
+body {
+  font-family: "Trebuchet MS", "Lucida Sans Unicode", "Lucida Grande",
+    "Lucida Sans", Arial, sans-serif;
+}
+#fuel-mix-chart {
+  height: 500px;
+}
 </style>
