@@ -1,7 +1,7 @@
 <template>
   <div>
     <h1>Fuel Mix for UK by percentage</h1>
-    <form v-on:submit.prevent="fetchData">
+    <form v-on:submit.prevent="fetchTimePeriod">
       <input type="datetime-local" v-model="fromTime" />
       <input type="datetime-local" v-model="toTime" />
       <input type="submit" value="Find my Data" />
@@ -17,8 +17,8 @@ export default {
   name: "App",
   data() {
     return {
-      fromTime: "2020-08-20T00:00",
-      toTime: "2020-08-27T15:00",
+      fromTime: "",
+      toTime: "",
       fuelMix: [],
     };
   },
@@ -27,59 +27,50 @@ export default {
   },
   methods: {
     fetchData: function () {
-      // YYYY-MM-DDThh:mmZ e.g. 2017-08-25T12:35Z
+      fetch("https://api.carbonintensity.org.uk/generation")
+        .then((response) => response.json())
+        .then((data) => {
+          this.toTime = data.data.to.substr(0, data.data.to.length - 1);
+          this.fromTime = data.data.from.substr(0, data.data.from.length - 1);
+          this.fuelMix = this.convertToArrays(data.data.generationmix);
+        });
+    },
+    fetchTimePeriod: function () {
       fetch(
         `https://api.carbonintensity.org.uk/generation/${this.fromTime}Z/${this.toTime}Z`
       )
         .then((response) => response.json())
         .then((data) => {
-          console.log(data);
-
-          // loop through data.data
-          // const biomass = data.data.reduce(
-          //   (total, timePeriod) => total + timePeriod.generationmix[0].perc,
-          //   0
-          // );
-          // console.log(biomass / data.data.length);
-          let averageData = [];
-          if (data.data.length > 0) {
-            const mixes = data.data[0].generationmix;
-
-            for (let i = 0; i < mixes.length; i++) {
-              const fuel = data.data.reduce(
-                (total, timePeriod) => total + timePeriod.generationmix[i].perc,
-                0
-              );
-              const mix = {
-                fuel: data.data[0].generationmix[i].fuel,
-                perc: fuel / data.data.length,
-              };
-              averageData.push(mix);
-            }
-          }
-
-          // console.log(data.data);
-          // this.fromTime = data.data.from;
-          // this.toTime = data.data.to;
-          // this.fuelMix = data.data.generationmix;
-          const fuelArray = [["Fuel", "Percentage"]];
-          // data.data[0].generationmix.forEach((mix) => {
-          averageData.forEach((mix) => {
-            const newFuel = [mix.fuel, mix.perc];
-            fuelArray.push(newFuel);
-          });
-          this.fuelMix = fuelArray;
-
-          /*
-          [
-            ["Fuel", "Percentage"],
-            ["hydro", "4"],
-            ["gas", "20"],
-            ["nuclear", 30],
-            ["coal", 10]
-          ]
-          */
+          const average = this.combineIntoAverage(data.data);
+          this.fuelMix = this.convertToArrays(average);
         });
+    },
+    convertToArrays: function (data) {
+      const fuelArray = [["Fuel", "Percentage"]];
+      data.forEach((mix) => {
+        const newFuel = [mix.fuel, mix.perc];
+        fuelArray.push(newFuel);
+      });
+      return fuelArray;
+    },
+    combineIntoAverage: function (data) {
+      let averageData = [];
+      if (data.length > 0) {
+        const mixes = data[0].generationmix;
+
+        for (let i = 0; i < mixes.length; i++) {
+          const fuel = data.reduce(
+            (total, timePeriod) => total + timePeriod.generationmix[i].perc,
+            0
+          );
+          const mix = {
+            fuel: data[0].generationmix[i].fuel,
+            perc: fuel / data.length,
+          };
+          averageData.push(mix);
+        }
+        return averageData;
+      }
     },
   },
   mounted() {
@@ -89,4 +80,7 @@ export default {
 </script>
 
 <style>
+body {
+  background-color: #hotpink;
+}
 </style>

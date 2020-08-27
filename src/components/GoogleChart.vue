@@ -14,11 +14,21 @@ export default {
   computed: {
     chartOptions: function () {
       return {
-        title: `UK Fuel Mix from ${this.fromTime} until ${this.fromTime}`,
+        title: `UK Fuel Mix from ${this.displayDate(
+          this.fromTime
+        )} until ${this.displayDate(this.toTime)}`,
       };
     },
   },
   props: ["fuelMix", "fromTime", "toTime"],
+  methods: {
+    displayDate: function (dateString) {
+      const split = dateString.split("T");
+      const date = split[0].split("-");
+      const orderedDate = `${date[2]}/${date[1]}/${date[0]}`;
+      return `${split[1]}, ${orderedDate}`;
+    },
+  },
 };
 </script>
 
@@ -29,5 +39,6 @@ body {
 }
 #fuel-mix-chart {
   height: 500px;
+  margin: 20px;
 }
 </style>
